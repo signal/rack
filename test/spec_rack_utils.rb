@@ -490,6 +490,18 @@ context "Rack::Utils::Multipart" do
     params["people"][0]["files"][:filename].should.equal "file1.txt"
     params["people"][0]["files"][:tempfile].read.should.equal "contents"
   end
+  
+  specify "can parse fields that end at the end of the buffer" do
+    input = File.read(multipart_file("bad_robots"))
+    
+    req = Rack::Request.new Rack::MockRequest.env_for("/",
+                      "CONTENT_TYPE" => "multipart/form-data, boundary=1yy3laWhgX31qpiHinh67wJXqKalukEUTvqTzmon",
+                      "CONTENT_LENGTH" => input.size,
+                      :input => input)
+
+    req.POST['file.path'].should.equal "/var/tmp/uploads/4/0001728414"
+    req.POST['addresses'].should.not.equal nil
+  end
 
   specify "can parse fields that end at the end of the buffer" do
     input = File.read(multipart_file("bad_robots"))
